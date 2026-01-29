@@ -115,11 +115,43 @@ npx tsx scripts/feishu-ws-online.ts
 
 README 里提供了示例命令与 YAML。你也可以把 `App ID/Secret` 放到本仓库根目录 `.env`（`FEISHU_ID` / `FEISHU_KEY`），再由你的启动脚本/配置读取。
 
-## 8. 自动化（可选）：Playwright 一键勾权限/事件 + 保存登录态
+## 8. AI（模型/鉴权）在哪里配置？（以 Codex 订阅为例）
+
+这仓库是 **Feishu 通道插件**，只负责“收消息/发消息”。真正的 **AI 模型（例如 `openai-codex/gpt-5.2`）和鉴权**是在 **Clawdbot Gateway** 里配置的，而不是在本插件仓库里配置。
+
+关键点：
+
+- Codex 订阅不需要 `OPENAI_API_KEY`：Clawdbot 可以复用你的 Codex CLI 登录（通常是 `~/.codex/auth.json`）。
+- Clawdbot 的默认配置路径是 `~/.clawdbot/clawdbot.json`（或用 `--dev` 时是 `~/.clawdbot-dev/clawdbot.json`）。
+- Clawdbot CLI 需要 Node >= 22。
+
+最低配思路（两种方式选一种）：
+
+1) 用向导（推荐）：
+
+```bash
+clawdbot onboard --auth-choice codex-cli
+```
+
+然后把默认模型设为：
+
+- `agents.defaults.model.primary = "openai-codex/gpt-5.2"`
+
+2) 手动改配置（JSON5）：
+
+```json5
+{
+  agents: { defaults: { model: { primary: "openai-codex/gpt-5.2" } } }
+}
+```
+
+> 如果你只是运行 `pnpm tsx scripts/feishu-ws-online.ts`，它只会打印事件日志，不会回消息；要“AI 自动回复”，需要启动 Clawdbot Gateway，并且不要同时跑多个长连接客户端（否则事件可能随机落到其中一个进程）。
+
+## 9. 自动化（可选）：Playwright 一键勾权限/事件 + 保存登录态
 
 本仓库暂未内置“飞书控制台自动化”脚本（权限/事件订阅/发布流程会随 UI 与企业策略变化）。建议先手动跑通一次；如确需自动化，可在你的主项目里维护 Playwright 录制/脚本化流程。
 
-## 9. 最终验收（跑通定义）
+## 10. 最终验收（跑通定义）
 
 当你完成上述步骤后，应该能做到：
 
