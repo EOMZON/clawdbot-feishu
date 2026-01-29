@@ -21,6 +21,10 @@ npm install @m1heng-clawd/feishu
 3. Enable required permissions (see below)
 4. Configure the plugin:
 
+For a step-by-step (Chinese) console SOP + common pitfalls (WebSocket save, publish/install, etc.), see:
+
+- `docs/feishu-app-setup-sop.md`
+
 ### Required Permissions
 
 | Permission | Scope | Description |
