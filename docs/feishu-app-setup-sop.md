@@ -55,6 +55,8 @@
 1. 进入“事件订阅/事件与回调”
 2. 找到“配置”（一般会有编辑按钮）
 3. 选择 **长连接 / WebSocket** 并保存
+   
+> 提醒：长连接/WebSocket 模式下 **不需要填写“请求地址/回调 URL”**。如果页面要求你填写 URL，说明你选的是 Webhook 模式。
 4. 在事件列表里订阅（至少）：
    - `im.message.receive_v1`（必需：收消息）
    - `im.chat.member.bot.added_v1`（建议：机器人被拉入群/会话）
@@ -66,12 +68,25 @@
 
 ## 5. 本地先把“长连接在线”跑起来（让控制台能保存）
 
-你需要启动 clawdbot/moltbot 的 gateway（或你的 bot 主进程），让它连接飞书，并在日志里看到 **WebSocket client started** 类似字样。
+你需要启动你的 bot 主进程（或网关），让它连接飞书，并在日志里看到 **WebSocket client started** 类似字样。
 
-如果你使用的是本仓库配套的 Playwright 自动化/本地 dev 约定（之前的实践）：
+为了更方便在“事件订阅”里保存 **长连接/WebSocket**（控制台会校验“长连接在线”），本仓库提供了一个最小脚本用于把长连接挂起来：
 
-- 网关日志：`~/.clawdbot-dev/gateway.log`
-- 判断成功：日志出现 `WebSocket client started`
+前提：在仓库根目录 `.env` 放好：
+
+- `FEISHU_ID=cli_xxx`
+- `FEISHU_KEY=app_secret`
+- （可选）`FEISHU_DOMAIN=feishu|lark`
+
+启动长连接（保持进程不要退出）：
+
+```bash
+pnpm tsx scripts/feishu-ws-online.ts
+# 或
+npx tsx scripts/feishu-ws-online.ts
+```
+
+判断成功：终端出现 `feishu-ws-online: WebSocket client started`。
 
 > 不同项目启动方式不同，但“**让长连接在线**”是硬要求：控制台保存 WebSocket 配置时会校验这一点。
 
@@ -98,32 +113,11 @@
 - `channels.feishu.appId` = 你的 `App ID`
 - `channels.feishu.appSecret` = 你的 `App Secret`
 
-README 里提供了示例命令与 YAML。你也可以把 `App ID/Secret` 放到本机 `.env` 里（例如你已经在 `/Users/zon/Desktop/MINE/.env` 放了 `FEISHU_ID` / `FEISHU_KEY`），再由你的启动脚本/配置读取。
+README 里提供了示例命令与 YAML。你也可以把 `App ID/Secret` 放到本仓库根目录 `.env`（`FEISHU_ID` / `FEISHU_KEY`），再由你的启动脚本/配置读取。
 
 ## 8. 自动化（可选）：Playwright 一键勾权限/事件 + 保存登录态
 
-本仓库已有脚本：`scripts/playwright_feishu_console.py`（在仓库根目录）。
-
-常用用法示例：
-
-1) 保存飞书登录态（避免每次扫码）：
-
-```bash
-python3 scripts/playwright_feishu_console.py --save-storage configs/feishu/storage.json
-```
-
-2) 自动配置权限 + 事件订阅（含长连接选择）：
-
-```bash
-python3 scripts/playwright_feishu_console.py \
-  --app-id "$FEISHU_ID" \
-  --configure-permissions \
-  --configure-events \
-  --storage configs/feishu/storage.json \
-  --save-storage configs/feishu/storage.json
-```
-
-> 说明：发布流程（版本/可用范围/审核）会因企业策略与 UI 变动而更容易卡住，建议先手动跑通一次；再把“版本/发布”自动化补齐。
+本仓库暂未内置“飞书控制台自动化”脚本（权限/事件订阅/发布流程会随 UI 与企业策略变化）。建议先手动跑通一次；如确需自动化，可在你的主项目里维护 Playwright 录制/脚本化流程。
 
 ## 9. 最终验收（跑通定义）
 
@@ -138,4 +132,3 @@ python3 scripts/playwright_feishu_console.py \
 - 事件收不到：优先检查 **事件订阅** 是否已保存 + 是否订阅了 `im.message.receive_v1`
 - 保存不了长连接：优先检查 **本地网关是否在线**
 - 搜不到机器人：优先检查 **版本是否发布** + **可用范围是否包含你** + **是否已安装**
-

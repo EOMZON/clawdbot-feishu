@@ -3,6 +3,9 @@
   "version": "0.1.0",
   "type": "module",
   "description": "Clawdbot Feishu/Lark channel plugin",
+  "scripts": {
+    "feishu:ws-online": "tsx scripts/feishu-ws-online.ts"
+  },
   "license": "MIT",
   "files": [
     "index.ts",
